@@ -77,7 +77,6 @@ function updateProgress() {
     const circle = s.querySelector('.step-circle');
     s.disabled = false;
     s.setAttribute('aria-selected', 'false');
-
     if (i < state.step) {
       s.classList.add('completed');
       circle.textContent = '✓';
@@ -97,11 +96,10 @@ function updateProgress() {
     p.classList.toggle('active', i === state.step)
   );
 
-  // Altura dinâmica — ajusta o container ao painel ativo
-  const activePanel = document.querySelector('.step-panel.active');
-  if (activePanel) {
-    const h = activePanel.scrollHeight;
-    wrapper().style.height = h + 'px';
+  var painelAtivo = document.querySelector('.step-panel.active');
+  if (painelAtivo) {
+    var altura = painelAtivo.offsetHeight;
+    wrapper().style.height = altura + 'px';
   }
 }
 
