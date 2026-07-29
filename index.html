@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendamento de Carregamento FOB - Multitécnica</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://script.google.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--verde:#008542;--verde-hover:#006b35;--azul:#003366;--fundo-pagina:#f0f4f8;--branco:#fff;--cinza:#9ca3af;--cinza-claro:#e5e7eb;--erro:#dc2626;--laranja:#f97316;--texto:#1f2937;--texto-secundario:#6b7280}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;background:var(--fundo-pagina);color:var(--texto);min-height:100vh;padding:16px}
+.container{max-width:720px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:center;gap:12px;padding:24px 0}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-marca{font-size:1.5rem;font-weight:700;color:var(--verde)}
+.logo-empresa{font-size:1.2rem;font-weight:600;color:var(--texto)}
+.card{background:var(--branco);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:24px;margin-bottom:16px;overflow:hidden}
+.progress-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;position:relative}
+.progress-line{position:absolute;top:16px;left:10%;right:10%;height:4px;background:var(--cinza-claro);z-index:0;border-radius:2px}
+.progress-line-fill{height:100%;background:var(--verde);width:0%;transition:width .4s ease;border-radius:2px}
+.step-item{display:flex;flex-direction:column;align-items:center;gap:6px;z-index:1;cursor:pointer;transition:transform .2s;border:none;background:none;font-family:inherit}
+.step-item.disabled{cursor:not-allowed;opacity:.6}
+.step-circle{width:36px;height:36px;border-radius:50%;background:var(--cinza-claro);color:var(--texto-secundario);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.875rem;transition:all .3s ease;border:2px solid transparent}
+.step-item.active .step-circle{background:var(--verde);color:#fff;transform:scale(1.15);border-color:rgba(0,133,66,.3)}
+.step-item.completed .step-circle{background:var(--verde);color:#fff}
+.step-label{font-size:.7rem;color:var(--texto-secundario);font-weight:500;text-align:center}
+.step-item.active .step-label{color:var(--verde);font-weight:700}
+.step-title{font-size:1.25rem;font-weight:700;color:var(--azul);margin-bottom:8px}
+.step-subtitle{font-size:.95rem;color:var(--texto-secundario);margin-bottom:24px}
+.steps-wrapper{display:flex;transition:transform .4s ease;width:400%}
+.step-panel{width:25%;flex-shrink:0;padding:0 4px;opacity:0;transition:opacity .3s ease}
+.step-panel.active{opacity:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:10px;font-weight:600;font-size:1rem;border:none;cursor:pointer;transition:all .2s ease;width:100%;font-family:inherit}
+.btn-primary{background:var(--verde);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--verde-hover)}
+.btn-secondary{background:transparent;color:var(--azul);border:2px solid var(--azul)}
+.btn-secondary:hover:not(:disabled){background:rgba(0,51,102,.05)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn-group{display:flex;flex-direction:column;gap:12px;margin-top:24px}
+.btn-submit{margin-top:16px;padding:18px}
+.option-cards{display:grid;grid-template-columns:1fr;gap:16px;margin-top:24px}
+@media(min-width:480px){.option-cards{grid-template-columns:1fr 1fr}}
+.option-card{background:var(--branco);border:2px solid var(--cinza-claro);border-radius:16px;padding:24px;text-align:center;cursor:pointer;transition:all .2s ease;font-family:inherit}
+.option-card:hover{border-color:var(--azul);transform:translateY(-2px)}
+.option-icon{font-size:2.5rem;margin-bottom:12px}
+.option-title{font-weight:700;color:var(--azul)}
+.form-group{margin-bottom:18px;position:relative}
+label{display:block;font-size:.875rem;font-weight:600;color:var(--texto);margin-bottom:6px}
+.required::after{content:' *';color:var(--erro)}
+input,select{width:100%;padding:12px 14px;border:1px solid var(--cinza-claro);border-radius:10px;font-size:1rem;font-family:Inter,sans-serif;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,133,66,.1)}
+:focus-visible{outline:2px solid var(--verde);outline-offset:2px}
+input.error{border-color:var(--erro)}
+.error-msg{color:var(--erro);font-size:.8rem;margin-top:4px;display:none;align-items:center;gap:4px}
+.error-msg.show{display:flex}
+.valid-icon{position:absolute;right:14px;top:38px;color:var(--verde);font-size:1.1rem;display:none}
+.valid-icon.show{display:block}
+.upload-box{border:2px dashed var(--cinza-claro);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-box:hover{border-color:var(--verde);background:rgba(0,133,66,.02)}
+.upload-preview{max-width:100%;max-height:150px;border-radius:8px;margin-top:12px;display:none}
+.upload-info{font-size:.8rem;color:var(--texto-secundario);margin-top:6px}
+.hidden{display:none!important}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.nav-buttons{display:flex;gap:12px;margin-top:24px}
+.nav-buttons .btn{flex:1}
+.review-section{margin-bottom:16px}
+.review-section h4{color:var(--azul);font-size:.95rem;margin-bottom:8px}
+.review-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--fundo-pagina);gap:12px}
+.review-label{color:var(--texto-secundario);font-size:.875rem}
+.review-value{font-weight:600;font-size:.875rem;text-align:right;word-break:break-word}
+.alert{background:#fff7ed;border-left:4px solid var(--laranja);color:#9a3412;padding:14px;border-radius:8px;margin:16px 0;display:flex;align-items:flex-start;gap:10px;font-size:.9rem}
+.checklist{margin-top:16px}
+.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--fundo-pagina);border-radius:10px;margin-bottom:10px}
+.checklist-item input{width:auto;margin-top:2px}
+.checklist-item label{margin-bottom:0;font-weight:500}
+.toast{position:fixed;top:16px;right:16px;background:var(--branco);color:var(--texto);padding:16px 20px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);max-width:320px;z-index:1000;transform:translateX(120%);transition:transform .4s ease;font-size:.9rem;border-left:4px solid var(--verde)}
+.toast.show{transform:translateX(0)}
+.toast.error{border-left-color:var(--erro)}
+.toast.warning{border-left-color:var(--laranja)}
+.success-screen,.error-screen{text-align:center;padding:32px 0}
+.success-icon{width:100px;height:100px;margin:0 auto 20px}
+.success-icon circle{stroke:var(--verde);stroke-width:3;fill:none}
+.success-icon path{stroke:var(--verde);stroke-width:3;fill:none;stroke-dasharray:100;stroke-dashoffset:100}
+.success-screen.animate .success-icon path{animation:draw .8s ease forwards .3s}
+@keyframes draw{to{stroke-dashoffset:0}}
+.success-title{color:var(--verde);font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.error-title{color:var(--erro);font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.loading{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.reveal{animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="container">
+<header><div class="logo"><span class="logo-marca">MultiLogística</span><span class="logo-empresa">Multitécnica</span></div></header>
+<div class="card">
+<div class="progress-bar" id="progressBar" role="tablist" aria-label="Etapas do agendamento">
+<div class="progress-line"><div class="progress-line-fill" id="progressFill"></div></div>
+<button type="button" class="step-item active" data-step="0" role="tab" aria-selected="true" aria-controls="step1"><div class="step-circle">1</div><span class="step-label">Tipo</span></button>
+<button type="button" class="step-item" data-step="1" role="tab" aria-selected="false" aria-controls="step2"><div class="step-circle">2</div><span class="step-label">Dados</span></button>
+<button type="button" class="step-item" data-step="2" role="tab" aria-selected="false" aria-controls="step3"><div class="step-circle">3</div><span class="step-label">Revisão</span></button>
+<button type="button" class="step-item" data-step="3" role="tab" aria-selected="false" aria-controls="step4"><div class="step-circle">4</div><span class="step-label">Envio</span></button>
+</div>
+<div class="steps-wrapper" id="stepsWrapper">
+<div class="step-panel active" id="step1">
+<h2 class="step-title">Agendamento de Carregamento FOB</h2>
+<p class="step-subtitle">Selecione o tipo de cadastro para começar</p>
+<div class="option-cards">
+<button type="button" class="option-card" id="cardPF"><div class="option-icon" aria-hidden="true">👤</div><div class="option-title">Pessoa Física</div></button>
+<button type="button" class="option-card" id="cardPJ"><div class="option-icon" aria-hidden="true">🏢</div><div class="option-title">Pessoa Jurídica</div></button>
+</div>
+</div>
+<div class="step-panel" id="step2">
+<h2 class="step-title">Dados do Transportador</h2>
+<p class="step-subtitle">Preencha os dados do motorista e veículo</p>
+<form id="formDados" autocomplete="off">
+<div class="visually-hidden" aria-hidden="true">
+<label for="website">Não preencha este campo</label>
+<input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+</div>
+<div id="camposPJ"><div class="form-group">
+<label for="cnpjTransportadora" class="required">CNPJ da transportadora</label>
+<input type="text" id="cnpjTransportadora" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" autocomplete="off">
+<span class="valid-icon" id="cnpjTransportadoraIcon" aria-hidden="true">✓</span><span class="error-msg" id="cnpjTransportadoraError">CNPJ inválido</span>
+</div></div>
+<div class="form-group"><label for="nomeMotorista" class="required">Nome do motorista</label><input type="text" id="nomeMotorista" placeholder="Nome completo" autocomplete="name"><span class="error-msg" id="nomeMotoristaError">Nome obrigatório</span></div>
+<div class="form-group"><label for="cpfMotorista" class="required">CPF do motorista</label><input type="text" id="cpfMotorista" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" autocomplete="off"><span class="valid-icon" id="cpfMotoristaIcon" aria-hidden="true">✓</span><span class="error-msg" id="cpfMotoristaError">CPF inválido</span></div>
+<div class="form-group" id="groupPIS"><label for="pisNis" class="required">PIS/NIS</label><input type="text" id="pisNis" inputmode="numeric" maxlength="14" placeholder="000.00000.00-0" autocomplete="off"><span class="error-msg" id="pisNisError">PIS/NIS inválido</span></div>
+<div class="form-group"><label for="celular" class="required">Celular</label><input type="text" id="celular" inputmode="tel" maxlength="15" placeholder="(99) 99999-9999" autocomplete="tel"><span class="valid-icon" id="celularIcon" aria-hidden="true">✓</span><span class="error-msg" id="celularError">Celular inválido</span></div>
+<div class="form-group"><label for="tipoVeiculo" class="required">Tipo de veículo</label>
+<select id="tipoVeiculo"><option value="">Selecione...</option><option value="Carreta aberta">Carreta aberta</option><option value="Bitrem">Bitrem</option><option value="Graneleira">Graneleira</option><option value="Sider">Sider</option><option value="Baú">Baú</option><option value="Truck convencional">Truck convencional</option><option value="Truck graneleiro">Truck graneleiro</option></select>
+<span class="error-msg" id="tipoVeiculoError">Selecione o tipo de veículo</span></div>
+<div class="form-group"><label for="placaVeiculo" class="required">Placa do veículo</label><input type="text" id="placaVeiculo" maxlength="8" placeholder="ABC1D23 ou ABC-1234" autocomplete="off"><span class="valid-icon" id="placaVeiculoIcon" aria-hidden="true">✓</span><span class="error-msg" id="placaVeiculoError">Placa inválida</span></div>
+<div class="form-group"><label for="placaCavalo" class="required">Placa do cavalo</label><input type="text" id="placaCavalo" maxlength="8" placeholder="ABC1D23 ou ABC-1234" autocomplete="off"><span class="valid-icon" id="placaCavaloIcon" aria-hidden="true">✓</span><span class="error-msg" id="placaCavaloError">Placa inválida</span></div>
+<div class="form-group hidden"><label for="placaCarreta2">Placa carreta 2</label><input type="text" id="placaCarreta2" maxlength="8" placeholder="ABC1D23 ou ABC-1234" autocomplete="off"><span class="valid-icon" id="placaCarreta2Icon" aria-hidden="true">✓</span><span class="error-msg" id="placaCarreta2Error">Placa inválida</span></div>
+<div class="form-group"><label for="fileDocMotorista" class="required">Documento do motorista</label>
+<div class="upload-box" id="uploadDocMotorista"><input type="file" id="fileDocMotorista" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden"><div>📄 Clique ou arraste o arquivo aqui</div><div class="upload-info">Imagem (JPG/PNG/WebP) ou PDF, máx. 5MB</div><img class="upload-preview" id="previewDocMotorista" alt="Pré-visualização do documento do motorista"></div>
+<span class="error-msg" id="docMotoristaError">Arquivo obrigatório</span></div>
+<div class="form-group"><label for="fileDocVeiculo" class="required">Documento do veículo</label>
+<div class="upload-box" id="uploadDocVeiculo"><input type="file" id="fileDocVeiculo" accept="image/jpeg,image/png,image/webp,application/pdf" class="hidden"><div>📄 Clique ou arraste o arquivo aqui</div><div class="upload-info">Imagem (JPG/PNG/WebP) ou PDF, máx. 5MB</div><img class="upload-preview" id="previewDocVeiculo" alt="Pré-visualização do documento do veículo"></div>
+<span class="error-msg" id="docVeiculoError">Arquivo obrigatório</span></div>
+</form>
+<div class="nav-buttons"><button type="button" class="btn btn-secondary" id="btnVoltar2">Voltar</button><button type="button" class="btn btn-primary" id="btnProximo2">Próximo</button></div>
+</div>
+<div class="step-panel" id="step3">
+<h2 class="step-title">Revisão</h2>
+<p class="step-subtitle">Confira os dados antes de enviar</p>
+<div id="reviewContent"></div>
+<div id="alertaICMS" class="alert hidden"><span aria-hidden="true">⚠️</span><div><strong>Atenção:</strong> Placa fora de Minas Gerais. Verifique as obrigações de ICMS interestadual antes do carregamento.</div></div>
+<div class="checklist"><p style="font-weight:600;margin-bottom:10px">Checklist de segurança (obrigatório)</p>
+<div class="checklist-item"><input type="checkbox" id="checkCNH"><label for="checkCNH">Possuo CNH válida e na categoria correta</label></div>
+<div class="checklist-item"><input type="checkbox" id="checkCRLV"><label for="checkCRLV">CRLV do veículo encontra-se em dia</label></div>
+<div class="checklist-item"><input type="checkbox" id="checkEPI"><label for="checkEPI">Disponho de equipamentos de segurança (EPIs)</label></div>
+<span class="error-msg" id="checklistError">Marque todos os itens do checklist</span></div>
+<div class="nav-buttons"><button type="button" class="btn btn-secondary" id="btnVoltar3">Voltar</button><button type="button" class="btn btn-primary" id="btnProximo3">Revisar e enviar</button></div>
+</div>
+<div class="step-panel" id="step4">
+<div id="telaEnvio">
+<h2 class="step-title">Envio</h2>
+<div class="review-section" id="resumoEnvio"></div>
+<button type="button" class="btn btn-primary btn-submit" id="btnEnviar"><span id="enviarSpinner" class="loading hidden" aria-hidden="true"></span><span id="enviarText">ENVIAR AGENDAMENTO</span></button>
+</div>
+<div id="telaSucesso" class="success-screen hidden">
+<svg class="success-icon" viewBox="0 0 100 100" role="img" aria-label="Sucesso"><title>Agendamento enviado com sucesso</title><circle cx="50" cy="50" r="45"></circle><path d="M30 52 L45 67 L70 37"></path></svg>
+<div class="success-title">Agendamento enviado!</div>
+<p>Seus dados foram recebidos com sucesso. Nossa equipe fará a liberação do carregamento.</p>
+</div>
+<div id="telaErro" class="error-screen hidden">
+<div class="error-title">Erro no envio</div>
+<p id="erroMensagem">Não foi possível enviar o agendamento.</p>
+<button type="button" class="btn btn-primary" id="btnTentarNovamente" style="margin-top:16px">Tentar novamente</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+<script src="app.js"></script>
+</body>
+</html>
