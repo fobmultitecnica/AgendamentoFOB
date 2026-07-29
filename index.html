@@ -9,13 +9,13 @@
 <style>
 :root{--verde:#008542;--verde-hover:#006b35;--azul:#003366;--fundo-pagina:#f0f4f8;--branco:#fff;--cinza:#9ca3af;--cinza-claro:#e5e7eb;--erro:#dc2626;--laranja:#f97316;--texto:#1f2937;--texto-secundario:#6b7280}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,sans-serif;background:var(--fundo-pagina);color:var(--texto);min-height:100vh;padding:16px}
+body{font-family:Inter,sans-serif;background:linear-gradient(rgba(240,244,248,0.93),rgba(240,244,248,0.93)),url('Multitcnica_Background.jpg') center/cover fixed no-repeat;color:var(--texto);min-height:100vh;padding:16px}
 .container{max-width:720px;margin:0 auto}
-header{display:flex;align-items:center;justify-content:center;gap:12px;padding:24px 0}
-.logo{display:flex;align-items:center;gap:8px}
-.logo-marca{font-size:1.5rem;font-weight:700;color:var(--verde)}
-.logo-empresa{font-size:1.2rem;font-weight:600;color:var(--texto)}
-.card{background:var(--branco);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:24px;margin-bottom:16px;overflow:hidden}
+.hero-banner{background:linear-gradient(135deg,rgba(0,51,102,0.82),rgba(0,133,66,0.65)),url('Multitcnica_Background.jpg') center/cover;padding:48px 20px;text-align:center;border-radius:16px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,0.12)}
+.hero-banner img{max-height:90px;width:auto;margin-bottom:16px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.4))}
+.hero-banner h1{color:#fff;font-size:1.4rem;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,0.5);margin:0}
+.hero-banner p{color:rgba(255,255,255,0.88);font-size:0.9rem;margin-top:8px;text-shadow:0 1px 3px rgba(0,0,0,0.4)}
+.card{background:var(--branco);border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);padding:24px;margin-bottom:16px;overflow:hidden}
 .progress-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;position:relative}
 .progress-line{position:absolute;top:16px;left:10%;right:10%;height:4px;background:var(--cinza-claro);z-index:0;border-radius:2px}
 .progress-line-fill{height:100%;background:var(--verde);width:0%;transition:width .4s ease;border-radius:2px}
@@ -94,7 +94,11 @@ input.error{border-color:var(--erro)}
 </head>
 <body>
 <div class="container">
-<header><div class="logo"><span class="logo-marca">MultiLogística</span><span class="logo-empresa">Multitécnica</span></div></header>
+<div class="hero-banner">
+<img src="Multitcnica_Logo.png" alt="Multitécnica">
+<h1>Agendamento de Carregamento FOB</h1>
+<p>Multiplicar no campo, nutrindo vidas</p>
+</div>
 <div class="card">
 <div class="progress-bar" id="progressBar" role="tablist" aria-label="Etapas do agendamento">
 <div class="progress-line"><div class="progress-line-fill" id="progressFill"></div></div>
