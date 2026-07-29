@@ -96,6 +96,13 @@ function updateProgress() {
   document.querySelectorAll('.step-panel').forEach((p, i) =>
     p.classList.toggle('active', i === state.step)
   );
+
+  // Altura dinâmica — ajusta o container ao painel ativo
+  const activePanel = document.querySelector('.step-panel.active');
+  if (activePanel) {
+    const h = activePanel.scrollHeight;
+    wrapper().style.height = h + 'px';
+  }
 }
 
 function goToStep(n, showErrors) {
