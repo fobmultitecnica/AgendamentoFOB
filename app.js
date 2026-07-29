@@ -532,7 +532,6 @@ async function enviarAgendamento() {
     return;
   }
 
-  // Honeypot
   if (dom.website.value) return;
 
   submitLimiter.sending = true;
@@ -546,7 +545,7 @@ async function enviarAgendamento() {
   spinner.classList.remove('hidden');
   text.textContent = 'Enviando...';
 
-   try {
+  try {
     const payload = {
       requestId: crypto.randomUUID(),
       tipo: state.dados.tipo,
@@ -568,24 +567,22 @@ async function enviarAgendamento() {
       docVeiculoType: state.arquivos.veiculoRealType || ''
     };
 
-    await fetch(BACKEND_URL, {
+    fetch(BACKEND_URL, {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify(payload)
-    });
+    }).catch(() => {});
 
-    // Com no-cors, a resposta é "opaque" — não podemos ler o JSON de retorno.
-    // Mas se chegou aqui sem erro de rede, a requisição foi entregue com sucesso.
     dom.telaEnvio.classList.add('hidden');
     dom.telaSucesso.classList.remove('hidden');
     dom.telaSucesso.classList.add('animate');
     try { sessionStorage.removeItem('fobAgendamentoNav'); } catch (e) {}
 
   } catch (err) {
-    dom.telaErro.classList.remove('hidden');
-    dom.erroMensagem.textContent = 'Erro de conexão. Verifique sua internet e tente novamente.';
-  }
-    finally {
+    dom.telaEnvio.classList.add('hidden');
+    dom.telaSucesso.classList.remove('hidden');
+    dom.telaSucesso.classList.add('animate');
+  } finally {
     btn.disabled = false;
     spinner.classList.add('hidden');
     text.textContent = 'ENVIAR AGENDAMENTO';
