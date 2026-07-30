@@ -1,10 +1,8 @@
 (function() {
 'use strict';
 
-// ============ CONFIGURAÇÃO ============
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwDcPRxUvh6Bf8DU4Wu9nj1aSDQ_bzuUe8B-oIr7lxLsx4EIjG_Pdc_JByzSMbSOImt/exec';
 
-// ============ CACHE DE ELEMENTOS DOM ============
 const dom = {};
 function cacheDom() {
   const ids = [
@@ -31,7 +29,6 @@ function cacheDom() {
   ids.forEach(function(id) { dom[id] = document.getElementById(id); });
 }
 
-// ============ ESTADO ============
 const state = {
   step: 0,
   tipo: null,
@@ -39,7 +36,6 @@ const state = {
   arquivos: { motorista: null, veiculo: null, motoristaRealType: '', veiculoRealType: '' }
 };
 
-// ============ PERSISTÊNCIA DE NAVEGAÇÃO ============
 function salvarEstado() {
   try {
     sessionStorage.setItem('fobAgendamentoNav', JSON.stringify({
@@ -64,7 +60,6 @@ function restaurarEstado() {
   } catch (e) { }
 }
 
-// ============ AJUSTE DINÂMICO DE ALTURA ============
 function ajustarAlturaPainel() {
   var painel = document.querySelector('.step-panel.active');
   if (painel) {
@@ -74,7 +69,6 @@ function ajustarAlturaPainel() {
   }
 }
 
-// ============ NAVEGAÇÃO ENTRE ETAPAS ============
 function steps() { return document.querySelectorAll('.step-item'); }
 function wrapper() { return dom.stepsWrapper; }
 function progressFill() { return dom.progressFill; }
@@ -104,11 +98,7 @@ function updateProgress() {
   document.querySelectorAll('.step-panel').forEach(function(p, i) {
     p.classList.toggle('active', i === state.step);
   });
-
-  // Mede imediatamente
   ajustarAlturaPainel();
-
-  // Mede novamente apos a transicao CSS (400ms)
   setTimeout(ajustarAlturaPainel, 450);
 }
 
@@ -141,7 +131,6 @@ function bindProgressBar() {
   });
 }
 
-// ============ TOAST ============
 function showToast(msg, type) {
   type = type || 'success';
   const toast = dom.toast;
@@ -150,7 +139,6 @@ function showToast(msg, type) {
   setTimeout(function() { toast.classList.remove('show'); }, 4000);
 }
 
-// ============ MÁSCARAS ============
 function formatCNPJ(v) {
   v = v.replace(/\D/g, '').slice(0, 14);
   if (v.length <= 2) return v;
@@ -188,7 +176,6 @@ function formatPlaca(v) {
   return v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
 }
 
-// ============ VALIDADORES ============
 function validarCPF(cpf) {
   cpf = cpf.replace(/\D/g, '');
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
@@ -233,7 +220,6 @@ function validarPlaca(placa) {
 
 function validarCelular(v) { return v.replace(/\D/g, '').length === 11; }
 
-// ============ TOGGLE DE VALIDADE VISUAL ============
 function toggleValid(id, isValid) {
   const el = dom[id];
   const icon = dom[id + 'Icon'];
@@ -245,7 +231,6 @@ function toggleValid(id, isValid) {
   return isValid;
 }
 
-// ============ BIND DE MÁSCARAS ============
 function attachMask(id, maskFn, validator) {
   const el = dom[id];
   if (!el) return;
@@ -256,7 +241,6 @@ function attachMask(id, maskFn, validator) {
   el.addEventListener('blur', function() { toggleValid(id, validator(el.value)); });
 }
 
-// ============ PREFIXOS DE PLACA DE MG ============
 var MG_PREFIXES = new Set([
   'GAL','GZM','HOK','MMM','NBP','NLO','NRA','NTC','NXK','NYG','NZA',
   'OAK','OBR','OVR','PBU','PDV','PKB','PMR','POO','PPT','PRG','PTU',
@@ -273,7 +257,6 @@ function getUFPlaca(placa) {
   return MG_PREFIXES.has(letras) ? 'MG' : 'OUT';
 }
 
-// ============ UPLOAD COM VALIDAÇÃO DE MAGIC BYTES ============
 var FILE_SIGNATURES = [
   { type: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46] },
   { type: 'image/jpeg', bytes: [0xFF, 0xD8, 0xFF] },
@@ -352,7 +335,6 @@ function setupUpload(inputId, boxId, previewId, key) {
   }
 }
 
-// ============ CAMPOS DINÂMICOS DE PLACA ============
 function atualizarCamposPlaca() {
   var tipo = dom.tipoVeiculo.value;
   var g1 = dom.placaVeiculo.closest('.form-group');
@@ -368,10 +350,10 @@ function atualizarCamposPlaca() {
     l1.textContent = 'Placa carreta 1'; l1.className = 'required'; g1.classList.remove('hidden');
     var l3 = g3.querySelector('label');
     l3.textContent = 'Placa carreta 2'; l3.className = 'required'; g3.classList.remove('hidden');
-  } else if (['Carreta aberta', 'Graneleira', 'Sider', 'Bau'].indexOf(tipo) !== -1) {
+  } else if (tipo === 'Carreta aberta' || tipo === 'Graneleira' || tipo === 'Sider' || tipo === 'Ba\u00FA') {
     l2.textContent = 'Placa do cavalo'; l2.className = 'required'; g2.classList.remove('hidden');
     l1.textContent = 'Placa da carreta'; l1.className = 'required'; g1.classList.remove('hidden');
-  } else if (['Truck convencional', 'Truck graneleiro'].indexOf(tipo) !== -1) {
+  } else if (tipo === 'Truck convencional' || tipo === 'Truck graneleiro') {
     l1.textContent = 'Placa do veiculo'; l1.className = 'required'; g1.classList.remove('hidden');
   }
 
@@ -384,7 +366,6 @@ function campoVisivel(id) {
   return !el.closest('.form-group').classList.contains('hidden');
 }
 
-// ============ VALIDAÇÃO DE DADOS ============
 function validarDados(showErrors) {
   var ok = true;
 
@@ -423,7 +404,6 @@ function validarDados(showErrors) {
   return ok;
 }
 
-// ============ VALIDAÇÃO DE CHECKLIST ============
 function validarChecklist() {
   var checks = ['checkCNH', 'checkCRLV', 'checkEPI'];
   var ok = checks.every(function(id) { return dom[id].checked; });
@@ -431,7 +411,6 @@ function validarChecklist() {
   return ok;
 }
 
-// ============ RENDERIZAÇÃO SEGURA ============
 function reviewItem(label, value) {
   var item = document.createElement('div');
   item.className = 'review-item';
@@ -478,7 +457,7 @@ function renderReview() {
   section.appendChild(reviewItem('Celular', state.dados.celular));
   section.appendChild(reviewItem('Veiculo', state.dados.tipoVeiculo));
 
-  if (['Truck convencional', 'Truck graneleiro'].indexOf(tipoVeiculo) !== -1) {
+  if (tipoVeiculo === 'Truck convencional' || tipoVeiculo === 'Truck graneleiro') {
     section.appendChild(reviewItem('Placa do veiculo', state.dados.placaVeiculo));
   } else if (tipoVeiculo === 'Bitrem') {
     section.appendChild(reviewItem('Placa do cavalo', state.dados.placaCavalo));
@@ -509,7 +488,7 @@ function renderResumoEnvio() {
   section.appendChild(reviewItem('Celular', state.dados.celular));
 
   var resumoVeiculo = tipoVeiculo;
-  if (['Truck convencional', 'Truck graneleiro'].indexOf(tipoVeiculo) !== -1) {
+  if (tipoVeiculo === 'Truck convencional' || tipoVeiculo === 'Truck graneleiro') {
     resumoVeiculo += ' - Placa: ' + state.dados.placaVeiculo;
   } else if (tipoVeiculo === 'Bitrem') {
     resumoVeiculo += ' - Cavalo: ' + state.dados.placaCavalo + ' / Carreta 1: ' + state.dados.placaVeiculo + ' / Carreta 2: ' + state.dados.placaCarreta2;
@@ -526,7 +505,6 @@ function renderResumoEnvio() {
   dom.telaErro.classList.add('hidden');
 }
 
-// ============ CONVERSÃO DE ARQUIVO ============
 function fileToBase64(file) {
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
@@ -544,7 +522,6 @@ function fileToBase64(file) {
   });
 }
 
-// ============ ENVIO PARA BACKEND ============
 var submitLimiter = { lastSubmit: 0, minInterval: 5000, sending: false };
 
 function enviarAgendamento() {
@@ -554,7 +531,6 @@ function enviarAgendamento() {
     showToast('Aguarde alguns segundos antes de tentar novamente.', 'warning');
     return;
   }
-
   if (dom.website.value) return;
 
   submitLimiter.sending = true;
@@ -580,7 +556,7 @@ function enviarAgendamento() {
     placaVeiculo: state.dados.placaVeiculo,
     placaCavalo: state.dados.placaCavalo,
     placaCarreta2: state.dados.placaCarreta2 || '',
-    checklist: ['CNH valida', 'CRLV em dia', 'EPIs'].join(', ')
+    checklist: 'CNH valida, CRLV em dia, EPIs'
   };
 
   Promise.all([
@@ -619,7 +595,6 @@ function enviarAgendamento() {
   });
 }
 
-// ============ HELPERS DE BIND ============
 function dom_bind(el, event, handler) {
   if (el) el.addEventListener(event, handler);
 }
@@ -630,7 +605,6 @@ function toggleCampos() {
   ajustarAlturaPainel();
 }
 
-// ============ INICIALIZAÇÃO ============
 function init() {
   cacheDom();
 
