@@ -2,7 +2,6 @@
 'use strict';
 
 // ============ CONFIGURAÇÃO ============
-// Substitua pela URL de deploy do Apps Script
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwDcPRxUvh6Bf8DU4Wu9nj1aSDQ_bzuUe8B-oIr7lxLsx4EIjG_Pdc_JByzSMbSOImt/exec';
 
 // ============ CACHE DE ELEMENTOS DOM ============
@@ -29,7 +28,7 @@ function cacheDom() {
     'telaEnvio','telaSucesso','telaErro','erroMensagem','btnTentarNovamente',
     'toast','website'
   ];
-  ids.forEach(id => { dom[id] = document.getElementById(id); });
+  ids.forEach(function(id) { dom[id] = document.getElementById(id); });
 }
 
 // ============ ESTADO ============
@@ -47,7 +46,7 @@ function salvarEstado() {
       step: state.step,
       tipo: state.tipo
     }));
-  } catch (e) { /* sessionStorage indisponível */ }
+  } catch (e) { }
 }
 
 function restaurarEstado() {
@@ -62,24 +61,34 @@ function restaurarEstado() {
     if (typeof dados.step === 'number' && dados.step >= 0 && dados.step <= 2) {
       state.step = dados.step;
     }
-  } catch (e) { /* dados corrompidos */ }
+  } catch (e) { }
+}
+
+// ============ AJUSTE DINÂMICO DE ALTURA ============
+function ajustarAlturaPainel() {
+  var painel = document.querySelector('.step-panel.active');
+  if (painel) {
+    var altura = painel.offsetHeight;
+    var wrap = document.getElementById('stepsWrapper');
+    if (wrap) wrap.style.height = altura + 'px';
+  }
 }
 
 // ============ NAVEGAÇÃO ENTRE ETAPAS ============
-const steps = () => document.querySelectorAll('.step-item');
-const wrapper = () => dom.stepsWrapper;
-const progressFill = () => dom.progressFill;
+function steps() { return document.querySelectorAll('.step-item'); }
+function wrapper() { return dom.stepsWrapper; }
+function progressFill() { return dom.progressFill; }
 
 function updateProgress() {
   const allSteps = steps();
-  allSteps.forEach((s, i) => {
+  allSteps.forEach(function(s, i) {
     s.classList.remove('active', 'completed', 'disabled');
     const circle = s.querySelector('.step-circle');
     s.disabled = false;
     s.setAttribute('aria-selected', 'false');
     if (i < state.step) {
       s.classList.add('completed');
-      circle.textContent = '✓';
+      circle.textContent = '\u2713';
     } else if (i === state.step) {
       s.classList.add('active');
       circle.textContent = String(i + 1);
@@ -92,15 +101,15 @@ function updateProgress() {
   });
   progressFill().style.width = (state.step / (allSteps.length - 1)) * 100 + '%';
   wrapper().style.transform = 'translateX(-' + (state.step * 25) + '%)';
-  document.querySelectorAll('.step-panel').forEach((p, i) =>
-    p.classList.toggle('active', i === state.step)
-  );
+  document.querySelectorAll('.step-panel').forEach(function(p, i) {
+    p.classList.toggle('active', i === state.step);
+  });
 
-  var painelAtivo = document.querySelector('.step-panel.active');
-  if (painelAtivo) {
-    var altura = painelAtivo.offsetHeight;
-    wrapper().style.height = altura + 'px';
-  }
+  // Mede imediatamente
+  ajustarAlturaPainel();
+
+  // Mede novamente apos a transicao CSS (400ms)
+  setTimeout(ajustarAlturaPainel, 450);
 }
 
 function goToStep(n, showErrors) {
@@ -138,7 +147,7 @@ function showToast(msg, type) {
   const toast = dom.toast;
   toast.textContent = msg;
   toast.className = 'toast show ' + type;
-  setTimeout(() => toast.classList.remove('show'), 4000);
+  setTimeout(function() { toast.classList.remove('show'); }, 4000);
 }
 
 // ============ MÁSCARAS ============
@@ -183,12 +192,12 @@ function formatPlaca(v) {
 function validarCPF(cpf) {
   cpf = cpf.replace(/\D/g, '');
   if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-  let sum = 0, rest;
-  for (let i = 1; i <= 9; i++) sum += parseInt(cpf[i - 1], 10) * (11 - i);
+  var sum = 0, rest;
+  for (var i = 1; i <= 9; i++) sum += parseInt(cpf[i - 1], 10) * (11 - i);
   rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
   if (rest !== parseInt(cpf[9], 10)) return false;
   sum = 0;
-  for (let i = 1; i <= 10; i++) sum += parseInt(cpf[i - 1], 10) * (12 - i);
+  for (var j = 1; j <= 10; j++) sum += parseInt(cpf[j - 1], 10) * (12 - j);
   rest = (sum * 10) % 11; if (rest === 10 || rest === 11) rest = 0;
   return rest === parseInt(cpf[10], 10);
 }
@@ -196,13 +205,13 @@ function validarCPF(cpf) {
 function validarCNPJ(cnpj) {
   cnpj = cnpj.replace(/\D/g, '');
   if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
-  let t = cnpj.length - 2, d = cnpj.substring(0, t), dv = cnpj.substring(t);
-  let sum = 0, pos = t - 7;
-  for (let i = t; i >= 1; i--) { sum += parseInt(d.charAt(t - i), 10) * pos--; if (pos < 2) pos = 9; }
-  let res = sum % 11 < 2 ? 0 : 11 - sum % 11;
+  var t = cnpj.length - 2, d = cnpj.substring(0, t), dv = cnpj.substring(t);
+  var sum = 0, pos = t - 7;
+  for (var i = t; i >= 1; i--) { sum += parseInt(d.charAt(t - i), 10) * pos--; if (pos < 2) pos = 9; }
+  var res = sum % 11 < 2 ? 0 : 11 - sum % 11;
   if (res !== parseInt(dv.charAt(0), 10)) return false;
   t += 1; d = cnpj.substring(0, t); sum = 0; pos = t - 7;
-  for (let i = t; i >= 1; i--) { sum += parseInt(d.charAt(t - i), 10) * pos--; if (pos < 2) pos = 9; }
+  for (var j = t; j >= 1; j--) { sum += parseInt(d.charAt(t - j), 10) * pos--; if (pos < 2) pos = 9; }
   res = sum % 11 < 2 ? 0 : 11 - sum % 11;
   return res === parseInt(dv.charAt(1), 10);
 }
@@ -210,10 +219,10 @@ function validarCNPJ(cnpj) {
 function validarPIS(pis) {
   pis = pis.replace(/\D/g, '');
   if (pis.length !== 11 || /^(\d)\1{10}$/.test(pis)) return false;
-  const pesos = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-  let sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(pis[i], 10) * pesos[i];
-  let rest = 11 - (sum % 11);
+  var pesos = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  var sum = 0;
+  for (var i = 0; i < 10; i++) sum += parseInt(pis[i], 10) * pesos[i];
+  var rest = 11 - (sum % 11);
   if (rest === 10 || rest === 11) rest = 0;
   return rest === parseInt(pis[10], 10);
 }
@@ -240,15 +249,15 @@ function toggleValid(id, isValid) {
 function attachMask(id, maskFn, validator) {
   const el = dom[id];
   if (!el) return;
-  el.addEventListener('input', () => {
+  el.addEventListener('input', function() {
     el.value = maskFn(el.value);
     if (el.value) el.classList.toggle('error', !validator(el.value));
   });
-  el.addEventListener('blur', () => toggleValid(id, validator(el.value)));
+  el.addEventListener('blur', function() { toggleValid(id, validator(el.value)); });
 }
 
 // ============ PREFIXOS DE PLACA DE MG ============
-const MG_PREFIXES = new Set([
+var MG_PREFIXES = new Set([
   'GAL','GZM','HOK','MMM','NBP','NLO','NRA','NTC','NXK','NYG','NZA',
   'OAK','OBR','OVR','PBU','PDV','PKB','PMR','POO','PPT','PRG','PTU',
   'PUA','PVR','RBB','RFG','RHD','RLE','RNI','RPA','RSI','SAJ','SCL',
@@ -259,116 +268,125 @@ const MG_PREFIXES = new Set([
 ]);
 
 function getUFPlaca(placa) {
-  const letras = (placa || '').replace(/[^A-Z]/g, '').slice(0, 3).toUpperCase();
+  var letras = (placa || '').replace(/[^A-Z]/g, '').slice(0, 3).toUpperCase();
   if (letras.length < 3) return null;
   return MG_PREFIXES.has(letras) ? 'MG' : 'OUT';
 }
 
 // ============ UPLOAD COM VALIDAÇÃO DE MAGIC BYTES ============
-const FILE_SIGNATURES = [
+var FILE_SIGNATURES = [
   { type: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46] },
   { type: 'image/jpeg', bytes: [0xFF, 0xD8, 0xFF] },
   { type: 'image/png', bytes: [0x89, 0x50, 0x4E, 0x47] },
   { type: 'image/webp', bytes: [0x52, 0x49, 0x46, 0x46], extra: { bytes: [0x57, 0x45, 0x42, 0x50], offset: 8 } }
 ];
 
-async function detectRealFileType(file) {
-  const buf = new Uint8Array(await file.slice(0, 16).arrayBuffer());
-  for (const sig of FILE_SIGNATURES) {
-    const matches = sig.bytes.every((b, i) => buf[i] === b);
-    if (matches) {
-      if (sig.extra) {
-        const extraMatches = sig.extra.bytes.every((b, i) => buf[sig.extra.offset + i] === b);
-        if (!extraMatches) continue;
+function detectRealFileType(file) {
+  return new Promise(function(resolve) {
+    file.slice(0, 16).arrayBuffer().then(function(buf) {
+      var arr = new Uint8Array(buf);
+      for (var i = 0; i < FILE_SIGNATURES.length; i++) {
+        var sig = FILE_SIGNATURES[i];
+        var matches = sig.bytes.every(function(b, idx) { return arr[idx] === b; });
+        if (matches) {
+          if (sig.extra) {
+            var extraMatches = sig.extra.bytes.every(function(b, idx) { return arr[sig.extra.offset + idx] === b; });
+            if (!extraMatches) continue;
+          }
+          resolve(sig.type);
+          return;
+        }
       }
-      return sig.type;
-    }
-  }
-  return null;
+      resolve(null);
+    }).catch(function() { resolve(null); });
+  });
 }
 
 function setupUpload(inputId, boxId, previewId, key) {
-  const input = dom[inputId];
-  const box = dom[boxId];
-  const preview = dom[previewId];
+  var input = dom[inputId];
+  var box = dom[boxId];
+  var preview = dom[previewId];
   if (!input || !box) return;
 
-  box.addEventListener('click', () => input.click());
-  box.addEventListener('keydown', e => {
+  box.addEventListener('click', function() { input.click(); });
+  box.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
   });
   box.setAttribute('tabindex', '0');
   box.setAttribute('role', 'button');
-  box.addEventListener('dragover', e => { e.preventDefault(); box.style.borderColor = 'var(--verde)'; });
-  box.addEventListener('dragleave', () => { box.style.borderColor = ''; });
-  box.addEventListener('drop', e => {
+  box.addEventListener('dragover', function(e) { e.preventDefault(); box.style.borderColor = 'var(--verde)'; });
+  box.addEventListener('dragleave', function() { box.style.borderColor = ''; });
+  box.addEventListener('drop', function(e) {
     e.preventDefault(); box.style.borderColor = '';
     input.files = e.dataTransfer.files;
     handleFile(input.files[0]);
   });
-  input.addEventListener('change', () => handleFile(input.files[0]));
+  input.addEventListener('change', function() { handleFile(input.files[0]); });
 
-  async function handleFile(file) {
+  function handleFile(file) {
     if (!file) return;
-    const errId = key === 'motorista' ? 'docMotoristaError' : 'docVeiculoError';
+    var errId = key === 'motorista' ? 'docMotoristaError' : 'docVeiculoError';
     if (file.size > 5 * 1024 * 1024) {
-      showToast('Arquivo deve ter no máximo 5MB', 'error');
+      showToast('Arquivo deve ter no maximo 5MB', 'error');
       input.value = '';
       return;
     }
-    const realType = await detectRealFileType(file);
-    if (!realType) {
-      showToast('Tipo de arquivo não suportado. Use JPG, PNG, WebP ou PDF.', 'error');
-      input.value = '';
-      return;
-    }
-    state.arquivos[key] = file;
-    state.arquivos[key + 'RealType'] = realType;
-    dom[errId].classList.remove('show');
-    if (realType.indexOf('image/') === 0) {
-      const reader = new FileReader();
-      reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
-      reader.readAsDataURL(file);
-    } else {
-      preview.style.display = 'none';
-      box.querySelector('div').textContent = '📎 ' + file.name;
-    }
+    detectRealFileType(file).then(function(realType) {
+      if (!realType) {
+        showToast('Tipo de arquivo nao suportado. Use JPG, PNG, WebP ou PDF.', 'error');
+        input.value = '';
+        return;
+      }
+      state.arquivos[key] = file;
+      state.arquivos[key + 'RealType'] = realType;
+      dom[errId].classList.remove('show');
+      if (realType.indexOf('image/') === 0) {
+        var reader = new FileReader();
+        reader.onload = function(e) { preview.src = e.target.result; preview.style.display = 'block'; };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+        box.querySelector('div').textContent = '\uD83D\uDCCE ' + file.name;
+      }
+    });
   }
 }
 
 // ============ CAMPOS DINÂMICOS DE PLACA ============
 function atualizarCamposPlaca() {
-  const tipo = dom.tipoVeiculo.value;
-  const g1 = dom.placaVeiculo.closest('.form-group');
-  const g2 = dom.placaCavalo.closest('.form-group');
-  const g3 = dom.placaCarreta2.closest('.form-group');
-  const l1 = g1.querySelector('label');
-  const l2 = g2.querySelector('label');
+  var tipo = dom.tipoVeiculo.value;
+  var g1 = dom.placaVeiculo.closest('.form-group');
+  var g2 = dom.placaCavalo.closest('.form-group');
+  var g3 = dom.placaCarreta2.closest('.form-group');
+  var l1 = g1.querySelector('label');
+  var l2 = g2.querySelector('label');
 
-  [g1, g2, g3].forEach(g => g.classList.add('hidden'));
+  [g1, g2, g3].forEach(function(g) { g.classList.add('hidden'); });
 
   if (tipo === 'Bitrem') {
     l2.textContent = 'Placa do cavalo'; l2.className = 'required'; g2.classList.remove('hidden');
     l1.textContent = 'Placa carreta 1'; l1.className = 'required'; g1.classList.remove('hidden');
-    const l3 = g3.querySelector('label');
+    var l3 = g3.querySelector('label');
     l3.textContent = 'Placa carreta 2'; l3.className = 'required'; g3.classList.remove('hidden');
-  } else if (['Carreta aberta', 'Graneleira', 'Sider', 'Baú'].includes(tipo)) {
+  } else if (['Carreta aberta', 'Graneleira', 'Sider', 'Bau'].indexOf(tipo) !== -1) {
     l2.textContent = 'Placa do cavalo'; l2.className = 'required'; g2.classList.remove('hidden');
     l1.textContent = 'Placa da carreta'; l1.className = 'required'; g1.classList.remove('hidden');
-  } else if (['Truck convencional', 'Truck graneleiro'].includes(tipo)) {
-    l1.textContent = 'Placa do veículo'; l1.className = 'required'; g1.classList.remove('hidden');
+  } else if (['Truck convencional', 'Truck graneleiro'].indexOf(tipo) !== -1) {
+    l1.textContent = 'Placa do veiculo'; l1.className = 'required'; g1.classList.remove('hidden');
   }
+
+  ajustarAlturaPainel();
 }
 
 function campoVisivel(id) {
-  const el = dom[id];
+  var el = dom[id];
   if (!el) return false;
   return !el.closest('.form-group').classList.contains('hidden');
 }
 
 // ============ VALIDAÇÃO DE DADOS ============
 function validarDados(showErrors) {
-  let ok = true;
+  var ok = true;
 
   if (state.tipo === 'PJ') {
     ok = toggleValid('cnpjTransportadora', validarCNPJ(dom.cnpjTransportadora.value)) && ok;
@@ -391,9 +409,9 @@ function validarDados(showErrors) {
     ok = toggleValid('placaCarreta2', validarPlaca(dom.placaCarreta2.value)) && ok;
   }
 
-  ['motorista', 'veiculo'].forEach(k => {
-    const errId = 'doc' + k.charAt(0).toUpperCase() + k.slice(1) + 'Error';
-    const err = dom[errId];
+  ['motorista', 'veiculo'].forEach(function(k) {
+    var errId = 'doc' + k.charAt(0).toUpperCase() + k.slice(1) + 'Error';
+    var err = dom[errId];
     if (!state.arquivos[k]) { err.classList.add('show'); ok = false; }
     else err.classList.remove('show');
   });
@@ -407,20 +425,20 @@ function validarDados(showErrors) {
 
 // ============ VALIDAÇÃO DE CHECKLIST ============
 function validarChecklist() {
-  const checks = ['checkCNH', 'checkCRLV', 'checkEPI'];
-  const ok = checks.every(id => dom[id].checked);
+  var checks = ['checkCNH', 'checkCRLV', 'checkEPI'];
+  var ok = checks.every(function(id) { return dom[id].checked; });
   dom.checklistError.classList.toggle('show', !ok);
   return ok;
 }
 
 // ============ RENDERIZAÇÃO SEGURA ============
 function reviewItem(label, value) {
-  const item = document.createElement('div');
+  var item = document.createElement('div');
   item.className = 'review-item';
-  const l = document.createElement('span');
+  var l = document.createElement('span');
   l.className = 'review-label';
   l.textContent = label;
-  const v = document.createElement('span');
+  var v = document.createElement('span');
   v.className = 'review-value';
   v.textContent = value;
   item.appendChild(l);
@@ -429,9 +447,9 @@ function reviewItem(label, value) {
 }
 
 function renderReview() {
-  const mostraCavalo = campoVisivel('placaCavalo');
-  const mostraCarreta2 = campoVisivel('placaCarreta2');
-  const tipoVeiculo = dom.tipoVeiculo.value;
+  var mostraCavalo = campoVisivel('placaCavalo');
+  var mostraCarreta2 = campoVisivel('placaCarreta2');
+  var tipoVeiculo = dom.tipoVeiculo.value;
 
   state.dados = {
     tipo: state.tipo,
@@ -446,22 +464,22 @@ function renderReview() {
     placaCarreta2: mostraCarreta2 ? dom.placaCarreta2.value : ''
   };
 
-  const section = document.createElement('div');
+  var section = document.createElement('div');
   section.className = 'review-section';
-  const h4 = document.createElement('h4');
+  var h4 = document.createElement('h4');
   h4.textContent = 'Dados do agendamento';
   section.appendChild(h4);
 
-  section.appendChild(reviewItem('Tipo', state.dados.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'));
+  section.appendChild(reviewItem('Tipo', state.dados.tipo === 'PF' ? 'Pessoa Fisica' : 'Pessoa Juridica'));
   if (state.dados.cnpjTransportadora) section.appendChild(reviewItem('CNPJ transportadora', state.dados.cnpjTransportadora));
   section.appendChild(reviewItem('Motorista', state.dados.nomeMotorista));
   section.appendChild(reviewItem('CPF', state.dados.cpfMotorista));
   if (state.dados.pisNis) section.appendChild(reviewItem('PIS/NIS', state.dados.pisNis));
   section.appendChild(reviewItem('Celular', state.dados.celular));
-  section.appendChild(reviewItem('Veículo', state.dados.tipoVeiculo));
+  section.appendChild(reviewItem('Veiculo', state.dados.tipoVeiculo));
 
-  if (['Truck convencional', 'Truck graneleiro'].includes(tipoVeiculo)) {
-    section.appendChild(reviewItem('Placa do veículo', state.dados.placaVeiculo));
+  if (['Truck convencional', 'Truck graneleiro'].indexOf(tipoVeiculo) !== -1) {
+    section.appendChild(reviewItem('Placa do veiculo', state.dados.placaVeiculo));
   } else if (tipoVeiculo === 'Bitrem') {
     section.appendChild(reviewItem('Placa do cavalo', state.dados.placaCavalo));
     section.appendChild(reviewItem('Placa carreta 1', state.dados.placaVeiculo));
@@ -474,31 +492,31 @@ function renderReview() {
   dom.reviewContent.innerHTML = '';
   dom.reviewContent.appendChild(section);
 
-  const placa = state.dados.placaVeiculo;
-  const ufPlaca = getUFPlaca(placa);
+  var placa = state.dados.placaVeiculo;
+  var ufPlaca = getUFPlaca(placa);
   dom.alertaICMS.classList.toggle('hidden', !placa || ufPlaca === 'MG');
 }
 
 function renderResumoEnvio() {
-  const tipoVeiculo = state.dados.tipoVeiculo;
-  const section = document.createElement('div');
+  var tipoVeiculo = state.dados.tipoVeiculo;
+  var section = document.createElement('div');
 
-  section.appendChild(reviewItem('Tipo', state.dados.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'));
+  section.appendChild(reviewItem('Tipo', state.dados.tipo === 'PF' ? 'Pessoa Fisica' : 'Pessoa Juridica'));
   if (state.dados.cnpjTransportadora) section.appendChild(reviewItem('CNPJ', state.dados.cnpjTransportadora));
   section.appendChild(reviewItem('Motorista', state.dados.nomeMotorista));
   section.appendChild(reviewItem('CPF', state.dados.cpfMotorista));
   if (state.dados.pisNis) section.appendChild(reviewItem('PIS/NIS', state.dados.pisNis));
   section.appendChild(reviewItem('Celular', state.dados.celular));
 
-  let resumoVeiculo = tipoVeiculo;
-  if (['Truck convencional', 'Truck graneleiro'].includes(tipoVeiculo)) {
-    resumoVeiculo += ' — Placa: ' + state.dados.placaVeiculo;
+  var resumoVeiculo = tipoVeiculo;
+  if (['Truck convencional', 'Truck graneleiro'].indexOf(tipoVeiculo) !== -1) {
+    resumoVeiculo += ' - Placa: ' + state.dados.placaVeiculo;
   } else if (tipoVeiculo === 'Bitrem') {
-    resumoVeiculo += ' — Cavalo: ' + state.dados.placaCavalo + ' / Carreta 1: ' + state.dados.placaVeiculo + ' / Carreta 2: ' + state.dados.placaCarreta2;
+    resumoVeiculo += ' - Cavalo: ' + state.dados.placaCavalo + ' / Carreta 1: ' + state.dados.placaVeiculo + ' / Carreta 2: ' + state.dados.placaCarreta2;
   } else {
-    resumoVeiculo += ' — Cavalo: ' + state.dados.placaCavalo + ' / Carreta: ' + state.dados.placaVeiculo;
+    resumoVeiculo += ' - Cavalo: ' + state.dados.placaCavalo + ' / Carreta: ' + state.dados.placaVeiculo;
   }
-  section.appendChild(reviewItem('Veículo', resumoVeiculo));
+  section.appendChild(reviewItem('Veiculo', resumoVeiculo));
 
   dom.resumoEnvio.innerHTML = '';
   dom.resumoEnvio.appendChild(section);
@@ -510,28 +528,28 @@ function renderResumoEnvio() {
 
 // ============ CONVERSÃO DE ARQUIVO ============
 function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() {
       if (!reader.result || typeof reader.result !== 'string') {
         reject(new Error('Arquivo vazio ou corrompido'));
         return;
       }
-      const result = reader.result.split(',')[1];
+      var result = reader.result.split(',')[1];
       if (!result) reject(new Error('Arquivo vazio ou corrompido'));
       else resolve(result);
     };
-    reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'));
+    reader.onerror = function() { reject(new Error('Erro ao ler o arquivo.')); };
     reader.readAsDataURL(file);
   });
 }
 
 // ============ ENVIO PARA BACKEND ============
-const submitLimiter = { lastSubmit: 0, minInterval: 5000, sending: false };
+var submitLimiter = { lastSubmit: 0, minInterval: 5000, sending: false };
 
-async function enviarAgendamento() {
+function enviarAgendamento() {
   if (submitLimiter.sending) return;
-  const now = Date.now();
+  var now = Date.now();
   if (now - submitLimiter.lastSubmit < submitLimiter.minInterval) {
     showToast('Aguarde alguns segundos antes de tentar novamente.', 'warning');
     return;
@@ -542,57 +560,63 @@ async function enviarAgendamento() {
   submitLimiter.sending = true;
   submitLimiter.lastSubmit = now;
 
-  const btn = dom.btnEnviar;
-  const spinner = dom.enviarSpinner;
-  const text = dom.enviarText;
+  var btn = dom.btnEnviar;
+  var spinner = dom.enviarSpinner;
+  var text = dom.enviarText;
 
   btn.disabled = true;
   spinner.classList.remove('hidden');
   text.textContent = 'Enviando...';
 
-  try {
-    const payload = {
-      requestId: crypto.randomUUID(),
-      tipo: state.dados.tipo,
-      nomeMotorista: state.dados.nomeMotorista,
-      cpfMotorista: state.dados.cpfMotorista,
-      cnpj: state.dados.cnpjTransportadora || '',
-      pisNis: state.dados.pisNis || '',
-      celular: state.dados.celular,
-      tipoVeiculo: state.dados.tipoVeiculo,
-      placaVeiculo: state.dados.placaVeiculo,
-      placaCavalo: state.dados.placaCavalo,
-      placaCarreta2: state.dados.placaCarreta2 || '',
-      checklist: ['CNH válida', 'CRLV em dia', 'EPIs'].join(', '),
-      docMotorista: state.arquivos.motorista ? await fileToBase64(state.arquivos.motorista) : '',
-      docMotoristaName: state.arquivos.motorista ? state.arquivos.motorista.name : '',
-      docMotoristaType: state.arquivos.motoristaRealType || '',
-      docVeiculo: state.arquivos.veiculo ? await fileToBase64(state.arquivos.veiculo) : '',
-      docVeiculoName: state.arquivos.veiculo ? state.arquivos.veiculo.name : '',
-      docVeiculoType: state.arquivos.veiculoRealType || ''
-    };
+  var payload = {
+    requestId: crypto.randomUUID(),
+    tipo: state.dados.tipo,
+    nomeMotorista: state.dados.nomeMotorista,
+    cpfMotorista: state.dados.cpfMotorista,
+    cnpj: state.dados.cnpjTransportadora || '',
+    pisNis: state.dados.pisNis || '',
+    celular: state.dados.celular,
+    tipoVeiculo: state.dados.tipoVeiculo,
+    placaVeiculo: state.dados.placaVeiculo,
+    placaCavalo: state.dados.placaCavalo,
+    placaCarreta2: state.dados.placaCarreta2 || '',
+    checklist: ['CNH valida', 'CRLV em dia', 'EPIs'].join(', ')
+  };
+
+  Promise.all([
+    state.arquivos.motorista ? fileToBase64(state.arquivos.motorista) : Promise.resolve(''),
+    state.arquivos.veiculo ? fileToBase64(state.arquivos.veiculo) : Promise.resolve('')
+  ]).then(function(results) {
+    payload.docMotorista = results[0];
+    payload.docMotoristaName = state.arquivos.motorista ? state.arquivos.motorista.name : '';
+    payload.docMotoristaType = state.arquivos.motoristaRealType || '';
+    payload.docVeiculo = results[1];
+    payload.docVeiculoName = state.arquivos.veiculo ? state.arquivos.veiculo.name : '';
+    payload.docVeiculoType = state.arquivos.veiculoRealType || '';
 
     fetch(BACKEND_URL, {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify(payload)
-    }).catch(() => {});
+    }).catch(function() {});
 
     dom.telaEnvio.classList.add('hidden');
     dom.telaSucesso.classList.remove('hidden');
     dom.telaSucesso.classList.add('animate');
     try { sessionStorage.removeItem('fobAgendamentoNav'); } catch (e) {}
 
-  } catch (err) {
+  }).catch(function() {
     dom.telaEnvio.classList.add('hidden');
     dom.telaSucesso.classList.remove('hidden');
     dom.telaSucesso.classList.add('animate');
-  } finally {
+    try { sessionStorage.removeItem('fobAgendamentoNav'); } catch (e) {}
+
+  }).finally(function() {
     btn.disabled = false;
     spinner.classList.add('hidden');
     text.textContent = 'ENVIAR AGENDAMENTO';
     submitLimiter.sending = false;
-  }
+  });
 }
 
 // ============ HELPERS DE BIND ============
@@ -603,6 +627,7 @@ function dom_bind(el, event, handler) {
 function toggleCampos() {
   if (dom.camposPJ) dom.camposPJ.classList.toggle('hidden', state.tipo !== 'PJ');
   if (dom.groupPIS) dom.groupPIS.classList.toggle('hidden', state.tipo !== 'PF');
+  ajustarAlturaPainel();
 }
 
 // ============ INICIALIZAÇÃO ============
@@ -614,15 +639,15 @@ function init() {
   attachMask('pisNis', formatPIS, validarPIS);
   attachMask('celular', formatCelular, validarCelular);
 
-  ['placaVeiculo', 'placaCavalo', 'placaCarreta2'].forEach(id => {
-    const el = dom[id];
+  ['placaVeiculo', 'placaCavalo', 'placaCarreta2'].forEach(function(id) {
+    var el = dom[id];
     if (!el) return;
-    el.addEventListener('input', () => { el.value = formatPlaca(el.value); el.classList.remove('error'); });
-    el.addEventListener('blur', () => toggleValid(id, validarPlaca(el.value)));
+    el.addEventListener('input', function() { el.value = formatPlaca(el.value); el.classList.remove('error'); });
+    el.addEventListener('blur', function() { toggleValid(id, validarPlaca(el.value)); });
   });
 
   dom_bind(dom.nomeMotorista, 'input', function(e) {
-    e.target.value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').replace(/\s+/g, ' ');
+    e.target.value = e.target.value.replace(/[^a-zA-Z\u00C0-\u00FF\s]/g, '').replace(/\s+/g, ' ');
     e.target.classList.remove('error');
   });
 
@@ -640,8 +665,8 @@ function init() {
   dom_bind(dom.btnVoltar3, 'click', function() { goToStep(1); });
 
   if (document.getElementById('formDados')) {
-    document.getElementById('formDados').addEventListener('submit', e => e.preventDefault());
-    document.getElementById('formDados').addEventListener('keypress', e => {
+    document.getElementById('formDados').addEventListener('submit', function(e) { e.preventDefault(); });
+    document.getElementById('formDados').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); goToStep(2, true); }
     });
   }
@@ -652,21 +677,29 @@ function init() {
     dom.telaEnvio.classList.remove('hidden');
   });
 
-  ['placaVeiculo', 'placaCavalo', 'placaCarreta2'].forEach(id => {
-    const el = dom[id];
+  ['placaVeiculo', 'placaCavalo', 'placaCarreta2'].forEach(function(id) {
+    var el = dom[id];
     if (el) el.closest('.form-group').classList.add('hidden');
   });
 
   bindProgressBar();
   restaurarEstado();
   updateProgress();
+  ajustarAlturaPainel();
 }
 
 // ============ BOOT ============
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', function() {
+    init();
+    ajustarAlturaPainel();
+  });
 } else {
   init();
+  ajustarAlturaPainel();
 }
+
+window.addEventListener('load', ajustarAlturaPainel);
+window.addEventListener('resize', ajustarAlturaPainel);
 
 })();
