@@ -315,21 +315,20 @@ function setupUpload(inputId, boxId, previewId, key) {
       return;
     }
     detectRealFileType(file).then(function(realType) {
-      if (!realType) {
-        showToast('Tipo de arquivo nao suportado. Use JPG, PNG, WebP ou PDF.', 'error');
-        input.value = '';
-        return;
-      }
-      state.arquivos[key] = file;
-      state.arquivos[key + 'RealType'] = realType;
-      dom[errId].classList.remove('show');
-      if (realType.indexOf('image/') === 0) {
+   if (realType.indexOf('image/') === 0) {
         var reader = new FileReader();
-        reader.onload = function(e) { preview.src = e.target.result; preview.style.display = 'block'; };
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          ajustarAlturaPainel();
+          setTimeout(ajustarAlturaPainel, 300);
+        };
         reader.readAsDataURL(file);
       } else {
         preview.style.display = 'none';
         box.querySelector('div').textContent = '\uD83D\uDCCE ' + file.name;
+        ajustarAlturaPainel();
+        setTimeout(ajustarAlturaPainel, 300);
       }
     });
   }
