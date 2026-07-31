@@ -266,8 +266,9 @@ var FILE_SIGNATURES = [
 
 function detectRealFileType(file) {
   return new Promise(function(resolve) {
-    file.slice(0, 16).arrayBuffer().then(function(buf) {
-      var arr = new Uint8Array(buf);
+    var reader = new FileReader();
+    reader.onload = function() {
+      var arr = new Uint8Array(reader.result);
       for (var i = 0; i < FILE_SIGNATURES.length; i++) {
         var sig = FILE_SIGNATURES[i];
         var matches = sig.bytes.every(function(b, idx) { return arr[idx] === b; });
@@ -280,8 +281,16 @@ function detectRealFileType(file) {
           return;
         }
       }
-      resolve(null);
-    }).catch(function() { resolve(null); });
+      var name = (file.name || '').toLowerCase();
+      if (name.indexOf('.pdf') !== -1) resolve('application/pdf');
+      else if (name.indexOf('.jpg') !== -1 || name.indexOf('.jpeg') !== -1) resolve('image/jpeg');
+      else if (name.indexOf('.png') !== -1) resolve('image/png');
+      else if (name.indexOf('.webp') !== -1) resolve('image/webp');
+      else if (file.type) resolve(file.type);
+      else resolve(null);
+    };
+    reader.onerror = function() { resolve(file.type || null); };
+    reader.readAsArrayBuffer(file.slice(0, 16));
   });
 }
 
@@ -314,8 +323,16 @@ function setupUpload(inputId, boxId, previewId, key) {
       input.value = '';
       return;
     }
-    detectRealFileType(file).then(function(realType) {
-   if (realType.indexOf('image/') === 0) {
+        detectRealFileType(file).then(function(realType) {
+      if (!realType) {
+        showToast('Tipo de arquivo nao suportado. Use JPG, PNG, WebP ou PDF.', 'error');
+        input.value = '';
+        return;
+      }
+      state.arquivos[key] = file;
+      state.arquivos[key + 'RealType'] = realType;
+      dom[errId].classList.remove('show');
+      if (realType.indexOf('image/') === 0) {
         var reader = new FileReader();
         reader.onload = function(e) {
           preview.src = e.target.result;
