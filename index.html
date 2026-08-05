@@ -9,10 +9,10 @@
 <style>
 :root{--verde:#008542;--verde-hover:#006b35;--azul:#003366;--fundo-pagina:#f0f4f8;--branco:#fff;--cinza:#9ca3af;--cinza-claro:#e5e7eb;--erro:#dc2626;--laranja:#f97316;--texto:#1f2937;--texto-secundario:#6b7280}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,sans-serif;background:url('MultitecnicaBackground.png') no-repeat center center fixed;background-size:cover;color:var(--texto);min-height:100vh;padding:16px;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto}
-.container{max-width:800px;width:100%;margin:0 auto;padding:16px 0}
+body{font-family:Inter,sans-serif;background:#0d3b20 url('MultitecnicaBackground.png') no-repeat center center fixed;background-size:contain;color:var(--texto);min-height:100vh;padding:16px;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto}
+.container{max-width:800px;width:100%;margin:0 auto}
 .hero-banner{display:none}
-.card{background:var(--branco);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:24px;margin-bottom:16px}
+.card{background:var(--branco);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:24px;margin-bottom:16px;width:100%}
 .progress-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;position:relative}
 .progress-line{position:absolute;top:16px;left:10%;right:10%;height:4px;background:var(--cinza-claro);z-index:0;border-radius:2px}
 .progress-line-fill{height:100%;background:var(--verde);width:0%;transition:width .4s ease;border-radius:2px}
@@ -26,7 +26,7 @@ body{font-family:Inter,sans-serif;background:url('MultitecnicaBackground.png') n
 .step-title{font-size:1.25rem;font-weight:700;color:var(--azul);margin-bottom:8px}
 .step-subtitle{font-size:.95rem;color:var(--texto-secundario);margin-bottom:24px}
 .steps-wrapper{display:flex;align-items:flex-start;overflow:hidden;transition:transform .4s ease,height .4s ease;width:400%}
-.step-panel{width:25%;flex-shrink:0;padding:0 4px;opacity:0;transition:opacity .3s ease}
+.step-panel{width:25%;flex-shrink:0;padding:0 4px 8px;opacity:0;transition:opacity .3s ease}
 .step-panel.active{opacity:1}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:10px;font-weight:600;font-size:1rem;border:none;cursor:pointer;transition:all .2s ease;width:100%;font-family:inherit}
 .btn-primary{background:var(--verde);color:#fff}
