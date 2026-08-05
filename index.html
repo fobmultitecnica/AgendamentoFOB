@@ -9,10 +9,10 @@
 <style>
 :root{--verde:#008542;--verde-hover:#006b35;--azul:#003366;--fundo-pagina:#f0f4f8;--branco:#fff;--cinza:#9ca3af;--cinza-claro:#e5e7eb;--erro:#dc2626;--laranja:#f97316;--texto:#1f2937;--texto-secundario:#6b7280}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,sans-serif;background:url('MultitecnicaBackground.png') no-repeat center center fixed;background-size:cover;color:var(--texto);min-height:100vh;padding:16px;display:flex;align-items:center;justify-content:center}
-.container{max-width:720px;margin:0 auto;width:100%}
+body{font-family:Inter,sans-serif;background:url('MultitecnicaBackground.png') no-repeat center center fixed;background-size:cover;color:var(--texto);min-height:100vh;padding:16px;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto}
+.container{max-width:800px;width:100%;margin:0 auto;padding:16px 0}
 .hero-banner{display:none}
-.card{background:var(--branco);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:24px;margin-bottom:16px;overflow:hidden}
+.card{background:var(--branco);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);padding:24px;margin-bottom:16px}
 .progress-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;position:relative}
 .progress-line{position:absolute;top:16px;left:10%;right:10%;height:4px;background:var(--cinza-claro);z-index:0;border-radius:2px}
 .progress-line-fill{height:100%;background:var(--verde);width:0%;transition:width .4s ease;border-radius:2px}
@@ -167,7 +167,6 @@ input.error{border-color:var(--erro)}
 <div class="error-title">Erro no envio</div>
 <p id="erroMensagem">Não foi possível enviar o agendamento.</p>
 <button type="button" class="btn btn-primary" id="btnTentarNovamente" style="margin-top:16px">Tentar novamente</button>
-</div>
 </div>
 </div>
 </div>
